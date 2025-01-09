@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAI Dashboard</title>
+    <style>
+        .container {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .image-container, .buttons-container, .explanation-container {
+            flex: 1;
+        }
+        .explanation {
+            display: none; /* Initially hidden */
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <script>
+        function showExplanation(explanationId) {
+            // Hide all explanations
+            document.querySelectorAll('.explanation').forEach(el => el.style.display = 'none');
+            // Show the selected explanation
+            document.getElementById(explanationId).style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+    <h1>Upload a Chest X-Ray</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <button type="submit">Upload</button>
+    </form>
+    
+    {% if image_url %}
+    <div class="container">
+        <!-- Original Image -->
+        <div class="image-container">
+            <h2>Uploaded Image:</h2>
+            <img src="{{ url_for('uploaded_file', filename=image_url) }}" alt="Uploaded Image">
+            <h2>Predicted Class: {{ predicted }}</h2>
+            <p>Confidence: {{ confidence }}% </p>
+        </div>
+        
+        <!-- Buttons and Explanations -->
+        <div class="buttons-container">
+            <h2>Explanations</h2>
+            <button onclick="showExplanation('gradcam')">Show Grad-CAM</button>
+            <button onclick="showExplanation('lrp')">Show LRP</button>
+
+            <!-- Grad-CAM Explanation -->
+            <div id="gradcam" class="explanation">
+                <h3>Grad-CAM Explanation:</h3>
+                <img src="{{ url_for('uploaded_file', filename=gradcam_url) }}" alt="Grad-CAM Explanation">
+                <p>
+                    <b>How to interpret Grad-CAM:</b><br>
+                    This visualization highlights the regions of the image most relevant to the model’s prediction.
+                    Warmer colors (e.g., red) indicate regions with high importance, while cooler colors (e.g., blue) have lower importance.
+                </p>
+            </div>
+
+            <!-- LRP Explanation -->
+            <div id="lrp" class="explanation">
+                <h3>LRP Explanation:</h3>
+                <img src="{{ url_for('uploaded_file', filename=lrp_url) }}" alt="LRP Explanation">
+                <p>
+                    <b>How to interpret LRP:</b><br>
+                    The relevance map shows how each pixel contributes to the decision. Red regions indicate positive relevance, 
+                    suggesting these areas influenced the prediction positively. Blue regions show negative relevance, 
+                    indicating areas that detracted from the prediction.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
